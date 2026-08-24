@@ -1,0 +1,50 @@
+O estado de um robô móvel é descrito pela sua pose 2D, que reúne a posição e a orientação no plano:
+
+- x: coordenada horizontal;
+- y: coordenada vertical;
+- θ: orientação do robô em relação ao eixo x.
+
+Essa informação é fundamental porque define onde o robô está e para onde ele está apontado. Em robótica móvel, a pose 2D é a base para a movimentação, a navegação e a estimação de trajetória. No simulador, o robô guarda esses valores e os atualiza a cada instante de tempo a partir das velocidades das rodas.
+
+
+A cinemática diferencial descreve o movimento de robôs com duas rodas acionadas independentemente. O modelo básico usa:
+
+- v_l: velocidade da roda esquerda;
+- v_r: velocidade da roda direita;
+- L: distância entre as rodas.
+
+A partir dessas grandezas, calculamos:
+
+- velocidade linear do corpo: v = (v_l + v_r) / 2
+- velocidade angular: ω = (v_r - v_l) / L
+
+Esse modelo permite gerar diferentes comportamentos:
+
+- linha reta: v_l = v_r
+- giro no próprio eixo: v_l = -v_r
+- curva: v_l ≠ v_r
+
+No código, a função `set_wheel_velocities()` transforma as velocidades das rodas em `v` e `ω`, e o método `update(dt)` integra essas grandezas para atualizar `x`, `y` e `θ`.
+
+
+A odometria discreta consiste em estimar a posição e a orientação do robô ao longo do tempo usando a integração das velocidades em intervalos discretos `dt`. Em cada iteração do loop, o código atualiza:
+
+- θ = θ + ω · dt
+- x = x + v · cos(θ) · dt
+- y = y + v · sin(θ) · dt
+
+Esse processo é uma aproximação numérica da cinemática contínua. Como a atualização acontece em pequenos passos, o erro pode se acumular ao longo do tempo. Em um ambiente real, esse erro pode ser causado por deslizamento, atrito, variação de velocidade e aproximações numéricas. Em malha aberta, esse efeito é especialmente importante, porque o robô segue uma sequência fixa de comandos sem correção de posição.
+
+
+
+A navegação GO-TO-GOAL é uma estratégia simples de controle em que o robô calcula a direção para um alvo e se orienta em direção a ele. O processo geralmente consiste em:
+
+1. calcular o vetor do robô até o alvo;
+2. determinar o ângulo do alvo em relação à orientação atual;
+3. ajustar a velocidade angular para alinhar o robô;
+4. mover com velocidade linear proporcional à distância até o objetivo;
+5. parar quando a distância atingir um limiar estabelecido.
+
+No exercício 3, essa ideia foi implementada com um controlador proporcional. O erro de orientação entre a direção desejada e a orientação atual gera uma correção angular, enquanto a velocidade linear depende da distância até o alvo. Quando o robô chega perto o suficiente do ponto, ele para automaticamente.
+
+Esse tipo de estratégia é a base da navegação simples em robótica móvel, pois combina o estado do robô, o alvo e um comando de ação para alcançar um objetivo.
